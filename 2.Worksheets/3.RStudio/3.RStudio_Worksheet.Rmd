@@ -1,6 +1,6 @@
 ---
 title: '3\. Worksheet: Basic R'
-author: "Student Name; Z620: Quantitative Biodiversity, Indiana University"
+author: "Lana Bolin; Z620: Quantitative Biodiversity, Indiana University"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
 geometry: margin=2.54cm
@@ -50,7 +50,7 @@ In the R code chunk below, please provide the code to:
 ```{r}
 rm(list = ls())
 getwd()
-setwd("/Users/bolinl/GitHub/QB2019_Bolin")
+setwd("~/GitHub/QB2019_Bolin")
 ```
 
 
@@ -78,6 +78,9 @@ theta <- pi/4
 hyp <- sqrt(2)
 opposite <- sin(theta) * hyp
 opposite
+
+# 4) My favorite number is e!
+log(exp(1))
 ```
 
 
@@ -95,6 +98,7 @@ In the R-code chunk below, do the following:
 ```{r}
 x <- c(2, 4, 6, 8, 10)
 w <- 14 * x
+w
 (x + w) / 15
 ```
 
@@ -108,7 +112,8 @@ Now, do the following:
 ```{r}
 k <- c(3, 6, 9, 12, 15)
 k * x
-d <- c(2, 4, 6, 6, 9, 12 ,15)
+d <- c(w[1:3], k[2:5])
+d
 ```
 
 ### Summary Statistics of Vectors
@@ -118,7 +123,7 @@ In the R-code chunk below, calculate the **summary statistics** (i.e., maximum, 
 ```{r}
 # Function for SEM
 sem <- function (x) {
-  sd(na.omit(v)) / sqrt(length(na.omit(v)))
+  sd(na.omit(x)) / sqrt(length(na.omit(x)))
 }
 
 v <- c(16.4, 16.0, 10.1, 16.8, 20.5, NA, 20.2, 13.1, 24.8, 20.2, 25.0, 20.5, 30.5, 31.4, 27.1)
@@ -141,18 +146,15 @@ Both columns should consist of random numbers.
 Make the mean of the first column equal to 8 with a standard deviation of 2 and the mean of the second column equal to 25 with a standard deviation of 10.
 
 ```{r}
-
-
-
-
-
+m1 <- matrix(c(rnorm(5, mean = 5, sd = 2), rnorm(5, mean = 25, sd = 10)), nrow = 5, ncol = 2, byrow = FALSE)
+m1
 ```
 
 ***Question 1***: What does the `rnorm` function do? 
 What do the arguments in this function specify? 
 Remember to use `help()` or type `?rnorm`.
 
-> Answer 1:
+> Answer 1: It generates a normal distribution, with two arguments that specify the parameters of the normal distribution: the mean, and the standard deviation.
 
 
 In the R code chunk below, do the following: 
@@ -161,15 +163,22 @@ In the R code chunk below, do the following:
 3) Determine the dimensions of the transposed matrix.
 
 ```{r}
+# 1)
+m <- as.matrix(read.table("~/GitHub/QB2019_Bolin/2.Worksheets/3.RStudio/data/matrix.txt", sep = "\t", header = FALSE))
+m
 
+# 2)
+m.t <- t(m)
+m.t
 
-
+# 3)
+dim(m.t)
 ```
 
 
 ***Question 2***: What are the dimensions of the matrix you just transposed?
 
-> Answer 2:
+> Answer 2: 5 x 10
 
 
 ###Indexing a Matrix
@@ -179,8 +188,11 @@ In the R code chunk below, do the following:
 2) Remove the last row of matrix `m`.
 
 ```{r}
+# 1) 
+m[, c(1:2, 4:5)]
 
-
+# 2)
+m[1:9, ]
 ```
 
 ## 6) BASIC DATA VISUALIZATION AND STATISTICAL ANALYSIS
@@ -191,8 +203,11 @@ In the R code chunk below, do the following:
 2) Display the structure of this data set.
 
 ```{r}
+# 1)
+meso <- read.table("~/GitHub/QB2019_Bolin/2.Worksheets/3.RStudio/data/zoop_nuts.txt", sep = "\t", header = TRUE)
 
-
+# 2)
+str(meso)
 ```
 
 ### Correlation
@@ -203,14 +218,20 @@ In the R-code chunk below, do the following:
 3) Conduct a simple **Pearson's correlation** analysis.
 
 ```{r}
+# 1)
+meso.num <- meso[, 3:8]
 
+# 2)
+pairs(meso.num)
 
+#3)
+cor(meso.num)
 ```
 
 
 ***Question 3***: Describe some of the general features based on the visualization and correlation analysis above?
 
-> Answer 3:
+> Answer 3: Zooplankton biomass positively correlates with total inorganic nutrient concentration, soluble reactive phosphorus concentration, total N, and total P (which makes sense). Many of these nutrient measurements correlate with each other. Chlorophyll _a_ concentration doesn't seem to show a strong relationship with any of the nutrients.
 
 
 In the R code chunk below, do the following:
@@ -219,9 +240,15 @@ In the R code chunk below, do the following:
 3) Use the print command from the handout to see the results of each correlation analysis.
 
 ```{r}
+require("psych")
 
+# 1) pearson
+cor.meso <- corr.test(meso.num, method = "pearson", adjust = "BH")
+print(cor.meso, digits = 3)
 
-
+# 2) spearman (non-parametric)
+cor.meso.np <- corr.test(meso.num, method = "spearman", adjust = "BH")
+print(cor.meso.np, digits = 3)
 ```
 
 ***Question 4***: 
@@ -231,7 +258,11 @@ When should one use non-parametric methods instead of parametric methods?
 With the Pearson's method, is there evidence for false discovery rate due to multiple comparisons? 
 Why is false discovery rate important?
 
-> Answer 4: 
+> Answer 4: The p-values change depending on whether you use a parametric or a non-parametric method, but the conclusions drawn, in this case, would not be different. Non-parametric methods are used when the assumptions of parametric methods are not met. For Pearson's correlation test both variables must be continuous, and we assume linearity, homoscedastic residuals, and the absence of outliers.  
+
+> With the Pearson's method we've made 15 comparisons, so definitely need to be careful about multiple comparisons. In this case, we don't have any p-values near the 0.05 threshold, so I feel pretty good about these results (the correlation coefficients, similarly, are either >0.6 or <0.2, so not a lot on the iffy zone). Of course it would be worth trying a correction and seeing if it qualitatively changes the results.  
+
+> False discovery rate is important because as you make more comparisons, the probability that you find a significant relationship _by chance_ increases. In other words, you become more likely to infer a relationship when one doesn't really exist.
 
 ### Linear Regression
 
@@ -241,18 +272,44 @@ In the R code chunk below, do the following:
 3) Produce a plot of this regression analysis including the following: categorically labeled points, the predicted regression line with 95% confidence intervals, and the appropriate axis labels.
 
 ```{r}
+# 1)
+fitreg <- lm(ZP ~ TN, data = meso)
 
+# 2) 
+summary(fitreg)
 
+# 3)
+plot(meso$TN, meso$ZP,
+     ylim = c(0, 10),
+     xlim = c(500, 5000),
+     xlab = expression(paste("total Nitrogen (", mu,"g/L)")),
+     ylab = "Zooplankton Biomass (mg/L)",
+     las = 1
+)
+text(meso$TN, meso$ZP, meso$NUTS, 
+     pos = 3,
+     cex = 0.8)
 
+  # Generate regression line
+newTN <- seq(min(meso$TN), max(meso$TN), by = 10)
+regline <- predict(fitreg, newdata = data.frame(TN = newTN))
+lines(newTN, regline)
 
-
-
-
+  # Create 95% CIs
+conf95 <- predict(fitreg, newdata = data.frame(TN = newTN),
+                  interval = c("confidence"), 
+                  level = 0.95,
+                  type = "response")
+matlines(newTN, conf95[, c("lwr", "upr")],
+         type = "l",
+         lty = 2,        # line type - makes it dotted
+         lwd = 1,
+         col = "black")
 ```
 
 ***Question 5***: Interpret the results from the regression model
 
-> Answer 5:
+> Answer 5: As total Nitrogen increased, Zooplankton Biomass increased.
 
 
 ```{r}
@@ -269,18 +326,46 @@ Using the R code chunk below, do the following:
 
 
 ```{r}
+# 1)
+NUTS <- factor(meso$NUTS, levels = c("L", "M", "H"))
 
+  # Calculate means and SEMs
+zp.means <- tapply(meso$ZP, NUTS, mean)
+zp.sem <- tapply(meso$ZP, NUTS, sem)
 
+# 2)
+bp <- barplot(zp.means,
+              ylim = c(0, round(max(meso$ZP), digits = 0)),
+              pch = 15,
+              cex = 1.25,
+              las = 1,
+              cex.lab = 1.4,
+              cex.axis = 1.25,
+              xlab = "nutrient supply",
+              ylab = "zooplankton biomass (mg/L)",
+              names.arg = c("low", "medium", "high"))
 
+# 3)
+arrows(x0 = bp, 
+       y0 = zp.means,
+       y1 = zp.means - zp.sem,
+       angle = 90,
+       length = 0.1, lwd = 1)
+arrows(x0 = bp, 
+       y0 = zp.means,
+       y1 = zp.means + zp.sem,
+       angle = 90,
+       length = 0.1, lwd = 1)
 
-
-
-
+# 4)
+fitanova <- aov(ZP ~ NUTS, data = meso)
+summary(fitanova)
+  # Yep, zooplankton biomass is affected by the nutrient treatment.
 ```
 
 ## SYNTHESIS: SITE-BY-SPECIES MATRIX
 
-In the R code chunk below, load the zoop.txt data set in your **3.RStudio** data folder.
+In the R code chunk below, load the zoops.txt data set in your **3.RStudio** data folder.
 Create a site-by-species matrix (or dataframe) that does *not* include TANK or NUTS.
 The remaining columns of data refer to the biomass (µg/L) of different zooplankton taxa: 
   
@@ -306,15 +391,64 @@ The remaining columns of data refer to the biomass (µg/L) of different zooplank
 Describe what you learned below in the "Answer" section and include appropriate code in the R chunk.
 
 ```{r}
+zoops <- read.table("~/GitHub/QB2019_Bolin/2.Worksheets/3.RStudio/data/zoops.txt", sep = "\t", header = TRUE)
+site.sp <- zoops[, 3:11]  # remove TANK & NUTS columns to make site-by-species df
 
-
-
+# Total biomass
+site.sp.sums <- sapply(site.sp, FUN = sum)
+barplot(site.sp.sums,
+        ylim = c(0, round(max(site.sp.sums), digits = 4)),
+        pch = 15,
+        cex = 1.25,
+        las = 1,
+        cex.lab = 1.25,
+        cex.axis = 0.9,
+        xlab = "zooplankton taxon",
+        ylab = expression(paste("total taxon biomass (", mu,"g/L)")))
 
 ```
+
+> Chydorus species are contributing disproportionately to the total biomass, and are therefore likely driving any biomass response to nutrient enrichnemt
+
+```{r}
+
+# Biomass correlations among taxa
+pairs(site.sp)
+corr.test(site.sp, method = "pearson", adjust = "BH")
+
+```
+
+>   Neither Chydorus species nor Simocephallus species (the two taxa with the greatest total biomass) appear to correlate strongly or significantly with any other taxa, which should make our results easier to interpret.
 
 ## SUBMITTING YOUR WORKSHEET
 Use Knitr to create a PDF of your completed **3.RStudio_Worksheet.Rmd** document, push the repo to GitHub, and create a pull request.
 Please make sure your updated repo include both the PDF and RMarkdown files.
 
 This assignment is due on **Wednesday, January 16^th^, 2015 at 12:00 PM (noon)**.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
