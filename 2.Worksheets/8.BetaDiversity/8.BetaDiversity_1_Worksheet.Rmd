@@ -1,6 +1,6 @@
 ---
 title: '8\. Worksheet: Among Site (Beta) Diversity -- Part 1'
-author: "Student Name; Z620: Quantitative Biodiversity, Indiana University"
+author: "Lana Bolin; Z620: Quantitative Biodiversity, Indiana University"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
 geometry: margin=2.54cm
@@ -47,10 +47,18 @@ In the R code chunk below, provide the code to:
 4. load the `vegan` R package (be sure to install if needed).  
 
 ```{r}
+rm(list = ls())
+getwd()
+setwd("~/GitHub/QB2019_Bolin/2.Worksheets/8.BetaDiversity/")
+require("vegan")
 
-
-
-
+package.list <- c("vegan", "ade4", "viridis", "gplots", "BiodiversityR", "indicspecies")
+for (package in package.list) {
+  if (!require(package, character.only = TRUE, quietly = TRUE)) {
+    install.packages(package)
+    library(package, character.only = TRUE)
+  }
+}
 ```
 
 ## 2) LOADING DATA
@@ -61,21 +69,20 @@ In the R code chunk below, do the following:
 2. explore the structure of the dataset.
 
 ```{r}
-# note, pleae do not print the dataset when submitting
-
-
-
+# note, please do not print the dataset when submitting
+data(doubs)
+str(doubs)
 ```
 
 ***Question 1***:  Describe some of the attributes of the `doubs` dataset.  
 
-a.  How many objects are in `doubs`?
-b.  How many fish species are there in the `doubs` dataset?
+a.  How many objects are in `doubs`? 
+b.  How many fish species are there in the `doubs` dataset? 
 c.  How many sites are in the `doubs` dataset?
 
-> ***Answer 1a***:  
-> ***Answer 1b***:  
-> ***Answer 1c***:  
+> ***Answer 1a***:  4
+> ***Answer 1b***:  27
+> ***Answer 1c***:  30
 
 ### Visualizing the Doubs River Dataset
 
@@ -85,9 +92,9 @@ a.  How does fish richness vary along the sampled reach of the Doubs River?
 b.  How does Brown Trout (*Salmo trutta*) abundance vary along the sampled reach of the Doubs River?
 c.  What do these patterns say about the limitations of using richness when examining patterns of biodiversity?
 
-> ***Answer 2a***:  
-> ***Answer 2b***:  
-> ***Answer 2c***:  
+> ***Answer 2a***:  There is higher richess in the downstream region, as well as in the little crook midriver.
+> ***Answer 2b***:  Brown Trout abundance decreases as you head downstream.
+> ***Answer 2c***:  Richness tells us little about specific taxa that we may be interested in. In this example, our focal species is most abundant in areas with overall low species richness.
 
 ## 3) QUANTIFYING BETA-DIVERSITY
 
@@ -97,9 +104,15 @@ In the R code chunk below, do the following:
 2. use this function to analyze various aspects of $\beta$-diversity in the Doubs River.  
 
 ```{r}
+beta.w <- function(site.by.species) {
+  SbyS.pa <- decostand(site.by.species,  method = "pa")  # convert to presence/absence
+  S <- ncol(SbyS.pa[, which(colSums(SbyS.pa) > 0)])      # number of species in the region
+  a.bar <- mean(specnumber(SbyS.pa))                     # avg. richness at each site
+  b.w <- round(S/a.bar,3)
+  return(b.w)
+}
 
-
-
+beta.w(doubs$fish)
 
 
 
@@ -253,6 +266,8 @@ Using the jelly bean data from class (i.e., JellyBeans.Source.txt and JellyBeans
 among subsamples in group B. 
 Use a t-test to determine whether compositional similarity was affected by the "vicariance" event. 
 Finally, compare the compositional similarity of jelly beans in group A and group B to the source community?
+
+
 
 2) Create a cluster diagram or ordination using the jelly bean data. 
 Are there any visual trends that would suggest a difference in composition between group A and group B?
