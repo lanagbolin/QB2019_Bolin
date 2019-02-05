@@ -146,7 +146,7 @@ a.  Describe how local richness ($\alpha$) and turnover ($\beta$) contribute to 
 b.  Is the fish assemblage at site 1 more similar to the one at site 2 or site 10?
 c.  Using your understanding of the equation $\beta_{w} = \gamma/\alpha$, how would your interpretation of $\beta$ change if we instead defined beta additively (i.e., $\beta = \gamma - \alpha$)?
 
-> ***Answer 3a***:  $\alpha$ and $\beta$ diversity contribute to $/gamma$ diversity in a multiplicative way - as either increases, so does $/gamma$ diversity.   
+> ***Answer 3a***:  ($\alpha$) and ($\beta$) diversity contribute to ($\gamma$) diversity in a multiplicative way - as either increases, so does ($\gamma$) diversity.   
 > ***Answer 3b***:  The fish assemblage at site 1 is more similar to the one at site 2 because there is lower pairwise beta diversity.  
 > ***Answer 3c***:  Instead of being a measure of how many times more diverse the regional pool is relative to the mean local diversity, it would instead be a measure of how many more species are found in the regional pool than in the average local pool.   
 
@@ -333,51 +333,36 @@ mean(bray.B)
 # T-test for A vs B comparison
 t.test(bray.A, bray.B)
 
+
+# T-tests for A vs Source and for B vs Source
 t.test(bray.A, jelly.source$Count)
 
+t.test(bray.B, jelly.source$Count)
 
 
 
-
-
-# FIX THIS PART
-bray.source <- vegdist(jelly.source$Count, method = "bray")
-mean(jelly.source)
 
 
 ```
 > Dissimilarity was lower in group A (0.27) than group B (0.33), so subsamples were more similar to each other in group A than in group B. The groups were marginally different from each other (t = -2.32, p = 0.0504).  
-> Dissimilarity was highest in the source community (0.34), so FIX THIS PART
+> Both subcommunities were compositionally different from the source community (P < 0.001 for both). 
 
 2) Create a cluster diagram or ordination using the jelly bean data. 
 Are there any visual trends that would suggest a difference in composition between group A and group B?
 
 ```{r}
-fish.ward <- hclust(fish.db, method = "ward.D2")
+jelly.db <- vegdist(jelly[, -c(1:2)], method = "bray")  
+
+jelly.full.ward <- hclust(jelly.db, method = "ward.D2")
 
 par(mar = c(1, 5, 2, 2) + 0.1)
-plot(fish.ward, 
-     main = "Doubs River Fish: Ward's Clustering",
-     ylab = "Squared Bray-Curtis Distance")
-
-
-
-
-jellyA.ward <- hclust(bray.A, method = "ward.D2")
-jellyB.ward <- hclust(bray.B, method = "ward.D2")
-
-par(mar = c(1, 5, 2, 2) + 0.1)
-plot(jellyA.ward, 
-     main = "Jelly Bean subcommunity A: Ward's Clustering",
-     ylab = "Squared Bray-Curtis Distance")
-
-plot(jellyB.ward, 
-     main = "Jelly Bean subcommunity B: Ward's Clustering",
-     ylab = "Squared Bray-Curtis Distance")
-
+plot(jelly.full.ward, 
+     main = "Jelly Bean Samples: Ward's Clustering",
+     ylab = "Squared Bray-Curtis Distance",
+     col = jelly$Group)
 ```
 
-> 
+> I couldn't figure out how to color my cluster diagram according to Group, but Group A is sites 1, 2, 3, 6, and 8. Three A sites - 1, 2, and 6 - cluster together, suggesting a difference between A and B. Howver, site 3 clusters with two B sites, as does site 8. So while there's a little bit of evidence for differences in composition between groups A and B, it's not overpowering.
 
 
 
