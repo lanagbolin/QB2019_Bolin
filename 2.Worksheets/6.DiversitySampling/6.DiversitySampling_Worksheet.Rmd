@@ -56,8 +56,8 @@ jelly.A <- jelly[jelly$Group == "A", ]
 jelly.B <- jelly[jelly$Group == "B", ]
 
 # Get sum for each speces
-jelly.A.sums <- colSums(jelly.A[, -1])
-jelly.B.sums <- colSums(jelly.B[, -1])
+jelly.A.sums <- colSums(jelly.A[, -c(1:2)])
+jelly.B.sums <- colSums(jelly.B[, -c(1:2)])
 ```
 
 #### Find best model fit for RAC curves
