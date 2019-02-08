@@ -1,6 +1,6 @@
 ---
 title: '8\. Worksheet: Among Site (Beta) Diversity -- Part 2'
-author: "Student Name; Z620: Quantitative Biodiversity, Indiana University"
+author: "Lana Bolin; Z620: Quantitative Biodiversity, Indiana University"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
 geometry: margin=2.54cm
@@ -40,10 +40,18 @@ In the R code chunk below, provide the code to:
 4. load the `vegan` R package (be sure to install if needed).  
 
 ```{r}
+rm(list = ls())
+getwd()
+setwd("~/GitHub/QB2019_Bolin/2.Worksheets/8.BetaDiversity/")
+require("vegan")
 
-
-
-
+package.list <- c("vegan", "ade4", "viridis", "gplots", "BiodiversityR", "indicspecies")
+for (package in package.list) {
+  if (!require(package, character.only = TRUE, quietly = TRUE)) {
+    install.packages(package)
+    library(package, character.only = TRUE)
+  }
+}
 ```
 
 ## 2) LOADING DATA
@@ -53,6 +61,7 @@ In the R code chunk below, load the `doubs` dataset from the `ade4` package
 ```{r}
 # note, pleae do not print the dataset when submitting
 
+data(doubs)
 
 
 ```
@@ -67,22 +76,29 @@ In the code chunk below, test the hypothesis that fish community composition var
 2. use the multivariate analyses for categorical predictors to describe how fish community structure relates to habitat quality.
 
 ```{r}
+quality <- c(rep("HQ", 13), rep("MQ", 5), rep("LQ", 6), rep("MQ", 5))
 
+fish <- doubs$fish
+fish <- fish[-8, ]
 
+# PERMANOVA
+adonis(fish ~ quality, method = "bray", permutations = 999)
 
+# IndVal
+indval <- multipatt(fish, cluster = quality, func = "IndVal.g", control = how(nperm = 999))
+summary(indval)
 
-
-
-
-
-
+# phi coefficient analysis
+fish.rel <- decostand(fish, method = "total")
+phi <- multipatt(fish.rel, cluster = quality, func = "r.g", control = how(nperm = 999))
+summary(phi)
 ```
 
 ***Question 1***: Based on the PERMANOVA, IndVal, and phi coefficient analyses, what did you learn about the relationship between habitat quality and the fish species composition?
 Are the different analyses consistent with one another and do they agree with the visualizations (heat maps, cluster dendograms, ordinations) that you created?
 
-> ***Answer 1***: 
-
+> ***Answer 1***: River quality affects the fish community in the Doubs. Teso is significantly but only moderately associated with middle quality sites, Satr and Phph are highly associated with high and middle quality sites, and 20 species are significantly associated with low  and middle quality sites to varying degrees. 18 of the 27 species show a significant positive relationship with a certain habitat.   
+> The analyses are similar to each other, but have some differences. A significant PERMANOVA is consistent with lots of species having strong habitat preferences and being indicator species. However, some discrepancies exist between IndVal and phi; for example, Teso is an indicator for middle quality sites, but doesn't show a strong preference for middle quality sites, which is odd?
 
 ### B.  Multivariate Procedures for Continuous Designs
 
@@ -93,17 +109,18 @@ In the R code chunk below, do the following:
 2. use a Mantel test to test the hypothesis that fish assemblages are correlated with stream environmental variables.
 
 ```{r}
+# Distance matrices
+fish.dist <- vegdist(doubs$fish[-8, ], method = "bray")
+env.dist <- vegdist(scale(doubs$env[-8, ]), method = "euclid")
 
-
-
-
-
+# Mantel test
+mantel(fish.dist, env.dist)
 ```
 
 ***Question 2***: What do the results from our Mantel test suggest about fish diversity and stream environmental conditions? 
 How does this relate to your hypothesis about stream quality influencing fish communities?
 
-> ***Answer 2***:  
+> ***Answer 2***:  The matrices are correlated, which supports my hypothesis about stream quality influencing fish communities since fish diversity and stream quality covary.
 
 ### ii.  Constrained Ordination
 In the R code chunk below, do the following:  
@@ -116,30 +133,55 @@ In the R code chunk below, do the following:
 6. plot the constrained ordination results including labeled points for each site, and
 7. add vectors that demonstrate the influence of each environmental factor the constrained ordination.   
 ```{r}
+# 1
+env.chem <- as.matrix(doubs$env[-8, 5:11])
 
+# 2
+fish.db <- vegdist(fish, method = "bray")
+doubs.dbrda <- dbrda(fish.db ~ ., as.data.frame(env.chem))
+ordiplot(doubs.dbrda)
 
+# 3
+permutest(doubs.dbrda, permutations = 999)
 
+# 4
+envfit(doubs.dbrda, env.chem, perm = 999)
 
+# 5
+dbrda.explainvar1 <- round(doubs.dbrda$CCA$eig[1] / sum(c(doubs.dbrda$CCA$eig, doubs.dbrda$CA$eig)), 3) * 100
+dbrda.explainvar2 <- round(doubs.dbrda$CCA$eig[2] / sum(c(doubs.dbrda$CCA$eig, doubs.dbrda$CA$eig)), 3) * 100
+dbrda.explainvar1
+dbrda.explainvar2
 
+# 6
+par(mar = c(5, 5, 4, 4) + 0.1)
+plot(scores(doubs.dbrda, display = "wa"), xlim = c(-1.3, 1.1), ylim = c(-1.1, 2.7),
+     xlab = paste("dbRDA 1 (", dbrda.explainvar1, "%)", sep = ""),
+     ylab = paste("dbRDA 2 (", dbrda.explainvar2, "%)", sep = ""),
+     pch = 16, cex = 2, type = "n", cex.lab = 1.5, cex.axis = 1.2, axes = FALSE)
+axis(side = 1, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+abline(h = 0, v = 0, lty = 3)
+box(lwd = 2)
+points(scores(doubs.dbrda, display = "wa"),
+       pch = 19, cex = 3, bg = "gray", col = "gray")
+text(scores(doubs.dbrda, display = "wa"),
+     labels = row.names(scores(doubs.dbrda, display = "wa")))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 7
+vectors <- scores(doubs.dbrda, display = "bp")
+arrows(0, 0, vectors[, 1], vectors[, 2],
+       lwd = 2, lty = 1, length = 0.2, col = "red")
+text(vectors[, 1], vectors[, 2], pos = 3, labels = row.names(vectors))
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, col = "red", lwd = 2.2,
+     at = pretty(range(vectors[, 1])) * 2, labels = pretty(range(vectors[, 1])))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, col = "red", lwd = 2.2,
+     at = pretty(range(vectors[, 2])) * 2, labels = pretty(range(vectors[, 2])))
 ```
 
 ***Question 3***: Based on the constrained ordination, what are the environmental variables (or groups of correlated variables) that seem to be contributing to variation in fish community structure?
 
-> ***Answer 3***: 
+> ***Answer 3***: nit; har & oxy; bdo, amm, and pho
 
 ### iii. Variation Partitioning
 In the code chunk below,   
