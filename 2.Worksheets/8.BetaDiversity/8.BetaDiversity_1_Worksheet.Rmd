@@ -296,7 +296,7 @@ fit
 a.  Describe the grouping of sites in the Doubs River based on fish community composition.
 b.  Generate a hypothesis about which fish species are potential indicators of river quality.
 
-> ***Answer 7a***:  Alal seems to influence community composition of sites 23, 24, and 25. Phph and Neva seem to influence community composition of the group of sites lower on PCoA 1.
+> ***Answer 7a***:  Alal seems to influence community composition of sites 23, 24, and 25. Phph and Neva seem to influence community composition of the group of sites lower on PCoA 1.  
 > ***Answer 7b***:   Because Phph and Neva are associated with the upstream sites that have low species diversity, they may be indicators of river quality.
 
 
